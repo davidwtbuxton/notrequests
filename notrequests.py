@@ -2,6 +2,8 @@ import base64
 import cookielib
 import functools
 import json as simplejson
+import mimetools
+import mimetypes
 import urllib
 import urllib2
 import urlparse
@@ -11,6 +13,7 @@ __version__ = '0.1'
 _user_agent = 'notrequests/' + __version__
 LATIN1 = 'latin-1'
 JSON_TYPE = 'application/json'
+BINARY_TYPE = 'application/octet-stream'
 
 _codes = {
     # Informational.
@@ -141,6 +144,67 @@ def _encode_data(data):
     return urllib.urlencode(data, doseq=True)
 
 
+def _guess_filename(fileobj):
+    name = getattr(fileobj, 'name', None)
+    if name and name[:1] != '<' and name[-1:] != '>':
+        return os.path.basename(name)
+
+
+def _build_form_data(data=None, files=None):
+    # https://pymotw.com/2/urllib2/#uploading-files
+    boundary = mimetools.choose_boundary()
+    parts = []
+    parts_boundary = '--' + boundary
+
+    # Has to be a dict if you are uploading files.
+    if data:
+        for field_name in sorted(data):
+            parts.extend([
+                parts_boundary,
+                'Content-Disposition: form-data; name="%s"' % field_name,
+                '',
+                data[field_name],
+            ])
+
+    if files:
+        # files is a dict or list of 2-tuples, but the values can be
+        # - a file-like object open for reading
+        # - a pair of (filename, file-like object)
+        # - a pair of (filename, byte string)
+        if isinstance(files, dict):
+            files = sorted(files.items())
+
+        for field_name, name_and_file in files:
+            if hasattr(name_and_file, 'read'):
+                name = _guess_filename(name_and_file) or field_name
+                value = name_and_file
+            else:
+                name, value = name_and_file
+
+            content_type = mimetypes.guess_type(name)[0] or BINARY_TYPE
+
+            if not isinstance(value, str):
+                value = value.read()
+
+            parts.extend([
+                parts_boundary,
+                'Content-Disposition: file; name="%s"; filename="%s"' % (field_name, name),
+                'Content-Type: ' + content_type,
+                '',
+                value,
+            ])
+
+    parts.extend([
+        parts_boundary + '--',
+        '',
+    ])
+
+    content_type = 'multipart/form-data; boundary=' + boundary
+    data = '\r\n'.join(parts)
+
+    return content_type, data
+
+
 def build_cookie(name, value):
     return cookielib.Cookie(
         version=0,
@@ -178,7 +242,7 @@ def _merge_params(url, params):
 
 
 def _build_request(method, url, params=None, data=None, headers=None,
-            cookies=None, auth=None, json=None):
+            cookies=None, auth=None, json=None, files=None):
     headers = {k.lower(): v for k, v in headers.items()} if headers else {}
     headers.setdefault('user-agent', _user_agent)
 
@@ -189,13 +253,17 @@ def _build_request(method, url, params=None, data=None, headers=None,
         name, password = auth
         headers['authorization'] = _encode_basic_auth(name, password)
 
-    if data and not isinstance(data, str):
+    if data and not files and not isinstance(data, str):
         data = _encode_data(data)
 
     if json:
         # If you send data and json, json overwrites data.
         data = simplejson.dumps(json)
         headers['content-type'] = JSON_TYPE
+
+    if files:
+        content_type, data = _build_form_data(data, files)
+        headers['content-type'] = content_type
 
     request = Request(method, url, data=data, headers=headers)
 
@@ -217,7 +285,7 @@ def _build_response(urllib_response, request):
 
 
 def request(method, url, params=None, data=None, headers=None, cookies=None,
-            auth=None, json=None, allow_redirects=True):
+            auth=None, json=None, files=None, allow_redirects=True):
     request = _build_request(
         method,
         url,
@@ -227,6 +295,7 @@ def request(method, url, params=None, data=None, headers=None, cookies=None,
         cookies=cookies,
         auth=auth,
         json=json,
+        files=files,
     )
 
     _opener = _build_opener(allow_redirects=allow_redirects)

@@ -1,3 +1,4 @@
+import io
 import json
 import os
 import unittest
@@ -169,6 +170,38 @@ class PostTestCase(unittest.TestCase):
 
         self.assertEqual(data['data'], '{"foo": "bar"}')
         self.assertEqual(data['headers']['Content-Type'], 'application/json')
+
+    def test_submit_file_with_file_object(self):
+        url = _url('/post')
+        files = {'file': io.BytesIO(b'binarydata')}
+        response = nr.post(url, files=files)
+
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        self.assertEqual(data['files'], {'file': b'binarydata'})
+
+    def test_submit_file_with_name_and_file_object(self):
+        url = _url('/post')
+        files = {'file': ('foo.txt', io.BytesIO(b'binarydata'))}
+        response = nr.post(url, files=files)
+
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['files'], {'file': b'binarydata'})
+
+    def test_submit_file_with_name_and_byte_string(self):
+        url = _url('/post')
+        files = {'file': ('foo.txt', b'binarydata')}
+        response = nr.post(url, files=files)
+
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        self.assertEqual(data['files'], {'file': b'binarydata'})
 
 
 class PutTestCase(unittest.TestCase):
