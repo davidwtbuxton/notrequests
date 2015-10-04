@@ -8,6 +8,21 @@ Notrequests is intended for doing HTTP requests on [Google App Engine][gae] wher
 It is not Python 3 compatible (yet).
 
 
+Installation
+------------
+
+From PyPI:
+
+    $ pip install notrequests
+
+Or download and run setup as normal:
+
+    $ curl -L -o notrequests.zip https://github.com/davidwtbuxton/notrequests/archive/master.zip
+    $ unzip notrequests.zip
+    $ cd notrequests-master
+    $ python setup.py install
+
+
 Usage
 -----
 
