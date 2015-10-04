@@ -42,7 +42,7 @@ Notrequests uses urllib2 but behaves more like Requests. So it won't throw an ex
     >>> response.status_code == notrequests.codes.not_found
     True
 
-You can do basic auth just like Requests:
+You can do basic auth just like Requests (but not other authentication types):
 
     >>> url = 'http://httpbin.org/basic-auth/alice/secret'
     >>> response = notrequests.get(url)
@@ -70,6 +70,30 @@ And send and decode JSON:
      u'json': {u'foo': [u'bar', u'baz']},
      u'origin': u'10.10.10.1',
      u'url': u'http://httpbin.org/put'}
+
+There's also support for uploading files:
+
+    >>> import io
+    >>> fileobj = io.BytesIO('foo bar baz')
+    >>> response = notrequests.post('http://httpbin.org/post', files={'upload': fileobj})
+    >>> response.json()['files']
+    {u'upload': 'foo bar baz'}
+
+As with Requests, the keys in the files dict are the form field input names and
+the values in the files dict can be a 2-tuple of file name with file object or
+byte string:
+
+    >>> files = {'upload': ('my-file.txt', b'Foo\nbar\nbaz.')}
+    >>> response = notrequests.post('http://httpbin.org/post', files=files)
+    >>> print response.request.data
+    --10.10.10.1.503.2717.1443987498.810.2
+    Content-Disposition: file; name="upload"; filename="my-file.txt"
+    Content-Type: text/plain
+
+    Foo
+    bar
+    baz.
+    --10.10.10.1.503.2717.1443987498.810.2--
 
 
 Tests
