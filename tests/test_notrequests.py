@@ -90,6 +90,14 @@ class GetTestCase(unittest.TestCase):
         self.assertEqual(response.cookies, {'foo': 'bar'})
 
 
+class PatchTestCase(unittest.TestCase):
+    def test_patch(self):
+        url = _url('/patch')
+        response = nr.patch(url)
+
+        self.assertEqual(response.status_code, 200)
+
+
 class PostTestCase(unittest.TestCase):
     def test_sending_data_dict_is_form_encoded(self):
         url = _url('/post')

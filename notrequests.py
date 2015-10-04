@@ -217,6 +217,7 @@ def request(method, url, params=None, data=None, headers=None, cookies=None,
 
 
 get = functools.partial(request, 'GET')
+patch = functools.partial(request, 'PATCH')
 post = functools.partial(request, 'POST')
 put = functools.partial(request, 'PUT')
 delete = functools.partial(request, 'DELETE')
