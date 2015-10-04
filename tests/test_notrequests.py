@@ -1,7 +1,6 @@
 import json
 import os
 import unittest
-import urllib2
 import urlparse
 
 import notrequests as nr
@@ -88,6 +87,39 @@ class GetTestCase(unittest.TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.cookies, {'foo': 'bar'})
+
+    def test_params_dict_sets_query_string(self):
+        url = _url('/get')
+        params = {'foo': 'bar'}
+        response = nr.get(url, params=params)
+
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        self.assertEqual(data['args'], params)
+
+    def test_params_merged_with_url_query_string(self):
+        url = _url('/get?foo=bar')
+        params = {'foo': 'baz'}
+        response = nr.get(url, params=params)
+
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        self.assertEqual(data['args'], {'foo': ['bar', 'baz']})
+
+    def test_params_tuple_sets_query_string(self):
+        url = _url('/get')
+        params = (('foo', 'bar'), ('baz', 'qux'),)
+        response = nr.get(url, params=params)
+
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        self.assertEqual(data['args'], {'foo': 'bar', 'baz': 'qux'})
 
 
 class PatchTestCase(unittest.TestCase):

@@ -4,6 +4,7 @@ import functools
 import json as simplejson
 import urllib
 import urllib2
+import urlparse
 
 
 __version__ = '0.1'
@@ -162,10 +163,27 @@ def build_cookie(name, value):
     )
 
 
+def _merge_params(url, params):
+    """Merge and encode query parameters with an URL."""
+    if isinstance(params, dict):
+        params = list(params.items())
+
+    scheme, netloc, path, query, fragment = urlparse.urlsplit(url)
+    url_params = urlparse.parse_qsl(query, keep_blank_values=True)
+    url_params.extend(params)
+
+    query = _encode_data(url_params)
+
+    return urlparse.urlunsplit((scheme, netloc, path, query, fragment))
+
+
 def _build_request(method, url, params=None, data=None, headers=None,
             cookies=None, auth=None, json=None):
     headers = {k.lower(): v for k, v in headers.items()} if headers else {}
     headers.setdefault('user-agent', _user_agent)
+
+    if params:
+        url = _merge_params(url, params)
 
     if auth:
         name, password = auth
@@ -203,6 +221,7 @@ def request(method, url, params=None, data=None, headers=None, cookies=None,
     request = _build_request(
         method,
         url,
+        params=params,
         data=data,
         headers=headers,
         cookies=cookies,
