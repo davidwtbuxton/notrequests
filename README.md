@@ -96,6 +96,21 @@ byte string:
     --10.10.10.1.503.2717.1443987498.810.2--
 
 
+API compatibility
+-----------------
+
+These are some features of [the Requests API][api] that Notrequests hasn't implemented. It isn't a complete list, and it would be nice to have better support.
+
+- Sessions
+- Request.text and auto-detection of encodings
+- Response.history
+- Response.raise_for_status()
+- Response.links
+- Streaming uploads / downloads and iterating over data
+- Alternate names for status codes
+- Proxies
+
+
 Tests
 -----
 
@@ -122,3 +137,4 @@ If you want to use [the app identity service to authenticate connections between
 [tox]: http://codespeak.net/tox/
 [appidentity]: https://cloud.google.com/appengine/docs/python/appidentity/#Python_Asserting_identity_to_other_App_Engine_apps
 [sockets]: https://cloud.google.com/appengine/docs/python/sockets/
+[api]: http://requests.readthedocs.org/en/latest/api/
