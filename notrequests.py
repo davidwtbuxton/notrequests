@@ -102,9 +102,21 @@ class Response(object):
 
         return {c.name: c.value for c in cookies}
 
+    @classmethod
+    def _encoding_from_message(cls, message):
+        for value in message.getplist():
+            if value[:8] == 'charset=':
+                return value[8:]
+
     def json(self, **kwargs):
         """Decodes response as JSON."""
         return simplejson.loads(self.content, **kwargs)
+
+    @property
+    def text(self):
+        encoding = self._encoding_from_message(self.headers)
+
+        return self.content.decode(encoding)
 
 
 class HTTPErrorHandler(urllib2.HTTPDefaultErrorHandler):

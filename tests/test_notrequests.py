@@ -249,6 +249,15 @@ class ResponseTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, '{\n  "user-agent": "%s"\n}\n' % nr._user_agent)
 
+    def test_decoding_text_with_encoding_header(self):
+        url = _url('/encoding/utf8')
+        response = nr.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers['Content-Type'], 'text/html; charset=utf-8')
+        self.assertIsInstance(response.text, unicode)
+        self.assertEqual(response.text[:21], u'<h1>Unicode Demo</h1>')
+
 
 class CodesTestCase(unittest.TestCase):
     def test_access_status_codes_as_properies(self):
