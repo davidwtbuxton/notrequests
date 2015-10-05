@@ -102,9 +102,9 @@ class Response(object):
 
         return {c.name: c.value for c in cookies}
 
-    def json(self):
+    def json(self, **kwargs):
         """Decodes response as JSON."""
-        return simplejson.loads(self.content)
+        return simplejson.loads(self.content, **kwargs)
 
 
 class HTTPErrorHandler(urllib2.HTTPDefaultErrorHandler):
