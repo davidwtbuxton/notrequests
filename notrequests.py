@@ -118,6 +118,12 @@ class Response(object):
 
         return self.content.decode(encoding)
 
+    @property
+    def links(self):
+        """A dict of dicts parsed from the response 'Link' header (if set)."""
+        return {}
+
+
 
 class HTTPErrorHandler(urllib2.HTTPDefaultErrorHandler):
     def http_error_default(self, req, fp, code, msg, hdrs):

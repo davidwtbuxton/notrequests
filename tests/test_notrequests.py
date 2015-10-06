@@ -258,6 +258,29 @@ class ResponseTestCase(unittest.TestCase):
         self.assertIsInstance(response.text, unicode)
         self.assertEqual(response.text[:21], u'<h1>Unicode Demo</h1>')
 
+    def test_links_property_with_valid_link_header(self):
+        url = _url('/response-headers')
+        link = '<https://example.com/?page=2>; rel="next", <https://example.com/?page=34>; rel="last"'
+        response = nr.get(url, params={'Link': link})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers['Link'], link)
+        self.assertEqual(
+            response.links,
+            {
+                'last': {'rel': 'last', 'url': 'https://example.com/?page=34'},
+                'next': {'rel': 'next', 'url': 'https://example.com/?page=2'},
+            },
+        )
+
+    def test_links_property_with_no_link_header(self):
+        url = _url('/response-headers')
+        response = nr.get(url, params={})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn('Link', response.headers)
+        self.assertEqual(response.links, {})
+
 
 class CodesTestCase(unittest.TestCase):
     def test_access_status_codes_as_properies(self):
