@@ -4,6 +4,7 @@ import functools
 import json as simplejson
 import mimetools
 import mimetypes
+import re
 import urllib
 import urllib2
 import urlparse
@@ -121,8 +122,32 @@ class Response(object):
     @property
     def links(self):
         """A dict of dicts parsed from the response 'Link' header (if set)."""
-        return {}
+        # <https://example.com/?page=2>; rel="next", <https://example.com/?page=34>; rel="last"'
+        # becomes
+        # {
+        #     'last': {'rel': 'last', 'url': 'https://example.com/?page=34'},
+        #     'next': {'rel': 'next', 'url': 'https://example.com/?page=2'},
+        # },
+        result = {}
+        if 'Link' in self.headers:
+            value = self.headers['Link']
 
+            for part in re.split(r', *<', value):
+                link = {}
+                vs = part.split(';')
+
+                # First section is always an url.
+                link['url'] = vs.pop(0).strip('\'" <>')
+
+                for v in vs:
+                    if '=' in v:
+                        key, v = v.split('=')
+                        link[key.strip('\'" ')] = v.strip('\'" ')
+
+                rkey = link.get('rel') or link['url']
+                result[rkey] = link
+
+        return result
 
 
 class HTTPErrorHandler(urllib2.HTTPDefaultErrorHandler):
