@@ -81,6 +81,13 @@ And send and decode JSON:
      u'origin': u'10.10.10.1',
      u'url': u'http://httpbin.org/put'}
 
+If the server sent 'Link' headers in the response (often used by APIs to give links to the next page of results) then you can get the parsed links straight from the response object:
+
+    >>> response.headers['Link']
+    '<https://example.com/?page=2>; rel="next"'
+    >>> response.links['next']['url']
+    'https://example.com/?page=2'
+
 There's also support for uploading files:
 
     >>> import io
@@ -114,7 +121,6 @@ These are some features of [the Requests API][api] that Notrequests has _not_ im
 - Sessions
 - Response.history
 - Response.raise_for_status()
-- Response.links
 - Streaming uploads / downloads and iterating over data
 - Alternate names for status codes
 - Proxies
