@@ -226,6 +226,7 @@ class HeadTestCase(unittest.TestCase):
         response = nr.head(url)
 
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, '')
 
 
 class ResponseTestCase(unittest.TestCase):
