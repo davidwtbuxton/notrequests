@@ -6,8 +6,12 @@ import socket
 import ssl
 import tempfile
 import unittest
-import urlparse
 import warnings
+
+try:
+    import urlparse
+except ImportError:
+    import urllib.parse as urlparse
 
 import notrequests as nr
 
