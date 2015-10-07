@@ -5,9 +5,9 @@ import notrequests
 
 try:
     import pypandoc
-    long_description = pypandoc.convert('README.md', 'rst')
+    long_description = pypandoc.convert('README.md', 'rst').decode('utf-8')
 except ImportError:
-    long_description = open('README.md', 'rb').read()
+    long_description = open('README.md', 'rb').read().decode('utf-8')
 
 
 setup(
