@@ -229,9 +229,16 @@ def _guess_filename(fileobj):
         return os.path.basename(name)
 
 
+def _choose_boundary():
+    chars = 'abcdefghijklmnopqrstuvwxyz123456789'
+    boundary = ''.join(random.choice(chars) for _ in range(40))
+
+    return boundary.encode('ascii')
+
+
 def _build_form_data(data=None, files=None):
     # https://pymotw.com/2/urllib2/#uploading-files
-    boundary = mimetools.choose_boundary()
+    boundary = _choose_boundary()
     parts = []
     parts_boundary = '--' + boundary
 
