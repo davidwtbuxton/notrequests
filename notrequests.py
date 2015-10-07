@@ -1,5 +1,4 @@
 import base64
-import cookielib
 import functools
 import json as simplejson
 import mimetools
@@ -7,9 +6,19 @@ import mimetypes
 import os
 import re
 import ssl
+import sys
 import urllib
-import urllib2
-import urlparse
+
+if sys.version_info.major >= 3:
+    # Py34
+    import http.cookiejar as cookielib
+    import urllib.request as urllib2
+    import urllib.parse as urlparse
+else:
+    # Py27
+    import cookielib
+    import urllib2
+    import urlparse
 
 
 __version__ = '0.6'
