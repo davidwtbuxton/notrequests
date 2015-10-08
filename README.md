@@ -52,6 +52,18 @@ Notrequests uses urllib2 but behaves more like Requests. So it won't throw an ex
     >>> response.status_code == notrequests.codes.not_found
     True
 
+If you want to prevent Notrequests following a redirect response, you can use the `allow_redirects` keyword:
+
+    >>> url = 'http://httpbin.org/redirect/1'
+    >>> response = notrequests.get(url)
+    >>> response.status_code
+    200
+    >>> response = notrequests.get(url, allow_redirects=False)
+    >>> response.status_code
+    302
+
+On Google App Engine, the `X-Appengine-Inbound-Appid` header will only be set if [the sending application doesn't allow redirects!][appidentity]
+
 You can do basic auth just like Requests (but not other authentication types):
 
     >>> url = 'http://httpbin.org/basic-auth/alice/secret'
