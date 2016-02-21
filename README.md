@@ -26,6 +26,9 @@ Or download and run setup as normal:
 Usage
 -----
 
+
+### Basic usage
+
 Notrequests is compatible with the Requests API (or it tries to be).
 
     >>> import notrequests
@@ -52,6 +55,9 @@ Notrequests uses urllib2 but behaves more like Requests. So it won't throw an ex
     >>> response.status_code == notrequests.codes.not_found
     True
 
+
+### Redirects
+
 If you want to prevent Notrequests following a redirect response, you can use the `allow_redirects` keyword:
 
     >>> url = 'http://httpbin.org/redirect/1'
@@ -64,6 +70,9 @@ If you want to prevent Notrequests following a redirect response, you can use th
 
 On Google App Engine, the `X-Appengine-Inbound-Appid` header will only be set if [the sending application doesn't allow redirects!][appidentity]
 
+
+### Authentication
+
 You can do basic auth just like Requests (but not other authentication types):
 
     >>> url = 'http://httpbin.org/basic-auth/alice/secret'
@@ -73,6 +82,9 @@ You can do basic auth just like Requests (but not other authentication types):
     >>> response = notrequests.get(url, auth=('alice', 'secret'))
     >>> response.status_code
     200
+
+
+### JSON
 
 And send and decode JSON:
 
@@ -93,12 +105,18 @@ And send and decode JSON:
      u'origin': u'10.10.10.1',
      u'url': u'http://httpbin.org/put'}
 
+
+### Accessing link headers
+
 If the server sent 'Link' headers in the response (often used by APIs to give links to the next page of results) then you can get the parsed links straight from the response object:
 
     >>> response.headers['Link']
     '<https://example.com/?page=2>; rel="next"'
     >>> response.links['next']['url']
     'https://example.com/?page=2'
+
+
+### Uploading files
 
 There's also support for uploading files:
 
@@ -123,6 +141,15 @@ byte string:
     bar
     baz.
     --10.10.10.1.503.2717.1443987498.810.2--
+
+
+### Disabling SSL certificate checking
+
+Use the `verify` keyword to disable SSL certificate checks. The default is `verify=True`, so Notrequests will raise `ssl.CertificateError` if the certificate does not match the server's hostname.
+
+    >>> response = notrequests.get('https://swupdl.adobe.com', verify=False)
+
+Notrequests does not support specifying alternate CA bundles.
 
 
 API compatibility
