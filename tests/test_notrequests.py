@@ -1,6 +1,7 @@
 import io
 import json
 import os
+import ssl
 import unittest
 import urlparse
 
@@ -121,6 +122,19 @@ class GetTestCase(unittest.TestCase):
         data = response.json()
 
         self.assertEqual(data['args'], {'foo': 'bar', 'baz': 'qux'})
+
+    def test_verify_ssl_is_true(self):
+        url = 'https://swupdl.adobe.com'
+
+        with self.assertRaises(ssl.CertificateError):
+            response = nr.get(url, verify=True)
+
+    def test_verify_ssl_is_false(self):
+        url = 'https://swupdl.adobe.com'
+        response = nr.get(url, verify=False)
+
+        # The important thing is it didn't throw an exception.
+        self.assertEqual(response.status_code, 404)
 
 
 class PatchTestCase(unittest.TestCase):

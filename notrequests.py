@@ -5,6 +5,7 @@ import json as simplejson
 import mimetools
 import mimetypes
 import re
+import ssl
 import urllib
 import urllib2
 import urlparse
@@ -163,12 +164,18 @@ class HTTPRedirectHandler(urllib2.HTTPRedirectHandler):
         return None
 
 
-def _build_opener(allow_redirects=True):
+def _build_opener(allow_redirects=True, verify=True):
     # We need a custom opener so we can choose to not follow redirects and
     # not treat 4xx and 5xx responses as errors.
     handlers = [HTTPErrorHandler]
     if not allow_redirects:
         handlers.append(HTTPRedirectHandler)
+
+    if not verify:
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        handler = urllib2.HTTPSHandler(context=ssl_context)
+        handlers.append(handler)
 
     opener = urllib2.build_opener(*handlers)
 
@@ -328,7 +335,7 @@ def _build_response(urllib_response, request):
 
 
 def request(method, url, params=None, data=None, headers=None, cookies=None,
-            auth=None, json=None, files=None, allow_redirects=True):
+            auth=None, json=None, files=None, allow_redirects=True, verify=True):
     request = _build_request(
         method,
         url,
@@ -341,7 +348,7 @@ def request(method, url, params=None, data=None, headers=None, cookies=None,
         files=files,
     )
 
-    _opener = _build_opener(allow_redirects=allow_redirects)
+    _opener = _build_opener(allow_redirects=allow_redirects, verify=verify)
 
     urllib_response = _opener.open(request)
     return _build_response(urllib_response, request)
