@@ -136,6 +136,10 @@ class GetTestCase(unittest.TestCase):
         # The important thing is it didn't throw an exception.
         self.assertEqual(response.status_code, 404)
 
+    def test_timeout_keyword(self):
+        url = _url('/')
+        response = nr.get(url, timeout=60)
+
 
 class PatchTestCase(unittest.TestCase):
     def test_patch(self):
