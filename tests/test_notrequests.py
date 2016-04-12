@@ -4,6 +4,7 @@ import os
 import ssl
 import unittest
 import urlparse
+import warnings
 
 import notrequests as nr
 
@@ -135,6 +136,18 @@ class GetTestCase(unittest.TestCase):
 
         # The important thing is it didn't throw an exception.
         self.assertEqual(response.status_code, 404)
+
+    def test_cookies_are_decoded_correctly(self):
+        url = 'http://www.adobe.com/support/downloads/product.jsp?product=1&platform=Windows'
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter('always')
+
+            response = nr.get(url)
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(w, [])
 
 
 class PatchTestCase(unittest.TestCase):
