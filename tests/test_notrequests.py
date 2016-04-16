@@ -155,39 +155,6 @@ class GetTestCase(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-    def test_cookies_are_decoded_correctly(self):
-        # Previously we caused cookielib errors trying to parse complex cookies.
-        # http://www.adobe.com/support/downloads/product.jsp?product=1&platform=Windows
-
-        url = _url('/response-headers')
-        # Domain can changed depending on NOTREQUESTS_TEST_URL being set.
-        domain = urlparse.urlparse(url).netloc.split(':')[0]
-
-        # httpbin's /cookies/set path doesn't allow us to specify domain, so
-        # set the full cookie header value manually.
-        cookie_values = [
-            'JSESSIONID=ABC123; Path=/',
-            'dtCookie=DEF456; Path=/; Domain={}',
-            'AWID=GHI789; Version=1; Comment="hello"; Domain={}; Max-Age=315360000; Path=/',
-        ]
-
-        with warnings.catch_warnings(record=True) as raised_warnings:
-            warnings.simplefilter('always')
-
-            params = [('Set-Cookie', value.format(domain)) for value in cookie_values]
-            response = nr.get(url, params=params, allow_redirects=False)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(raised_warnings, [])
-        self.assertEqual(
-            response.cookies,
-            {
-                'JSESSIONID': 'ABC123',
-                'dtCookie': 'DEF456',
-                'AWID': 'GHI789',
-            },
-        )
-
 
 class PatchTestCase(unittest.TestCase):
     def test_patch(self):
@@ -347,6 +314,39 @@ class ResponseTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotIn('Link', response.headers)
         self.assertEqual(response.links, {})
+
+    def test_cookies_are_decoded_correctly(self):
+        # Previously we caused cookielib errors trying to parse complex cookies.
+        # http://www.adobe.com/support/downloads/product.jsp?product=1&platform=Windows
+
+        url = _url('/response-headers')
+        # Domain can changed depending on NOTREQUESTS_TEST_URL being set.
+        domain = urlparse.urlparse(url).netloc.split(':')[0]
+
+        # httpbin's /cookies/set path doesn't allow us to specify domain, so
+        # set the full cookie header value manually.
+        cookie_values = [
+            'JSESSIONID=ABC123; Path=/',
+            'dtCookie=DEF456; Path=/; Domain={}',
+            'AWID=GHI789; Version=1; Comment="hello"; Domain={}; Max-Age=315360000; Path=/',
+        ]
+
+        with warnings.catch_warnings(record=True) as raised_warnings:
+            warnings.simplefilter('always')
+
+            params = [('Set-Cookie', value.format(domain)) for value in cookie_values]
+            response = nr.get(url, params=params, allow_redirects=False)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(raised_warnings, [])
+        self.assertEqual(
+            response.cookies,
+            {
+                'JSESSIONID': 'ABC123',
+                'dtCookie': 'DEF456',
+                'AWID': 'GHI789',
+            },
+        )
 
 
 class CodesTestCase(unittest.TestCase):
