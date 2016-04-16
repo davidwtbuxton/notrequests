@@ -351,7 +351,9 @@ def request(method, url, params=None, data=None, headers=None, cookies=None,
 
     _opener = _build_opener(allow_redirects=allow_redirects, verify=verify)
 
-    # Better than trying to re-use urllib2's default timeout value.
+    # Better than trying to re-use urllib2's default timeout value. For regular
+    # Python a timeout raises socket.timeout but App Engine will raise
+    # google.appengine.api.urlfetch_errors.DeadlineExceededError.
     kwargs = {} if timeout is None else {'timeout': timeout}
     urllib_response = _opener.open(request, **kwargs)
 
