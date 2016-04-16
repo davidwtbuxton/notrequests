@@ -1,6 +1,7 @@
 import io
 import json
 import os
+import socket
 import ssl
 import unittest
 import urlparse
@@ -135,6 +136,23 @@ class GetTestCase(unittest.TestCase):
 
         # The important thing is it didn't throw an exception.
         self.assertEqual(response.status_code, 404)
+
+    def test_timeout_keyword(self):
+        url = _url('/')
+        response = nr.get(url, timeout=60)
+
+    def test_timeout_raises_error(self):
+        # On App Engine I think it raises DeadlineExceededError.
+        url = _url('/delay/2')
+
+        with self.assertRaises(socket.timeout):
+            response = nr.get(url, timeout=1)
+
+    def test_timeout_does_not_raise_error(self):
+        url = _url('/delay/1')
+        response = nr.get(url, timeout=2)
+
+        self.assertEqual(response.status_code, 200)
 
 
 class PatchTestCase(unittest.TestCase):
