@@ -100,9 +100,9 @@ class Response(object):
     @classmethod
     def _read_cookies(cls, response, request):
         jar = cookielib.CookieJar()
-        cookies = jar.make_cookies(response, request)
+        jar.extract_cookies(response, request)
 
-        return {c.name: c.value for c in cookies}
+        return {cookie.name: cookie.value for cookie in jar}
 
     @classmethod
     def _encoding_from_message(cls, message):
