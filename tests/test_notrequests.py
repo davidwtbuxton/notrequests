@@ -23,6 +23,7 @@ class PackageAPITestCase(unittest.TestCase):
         nr.put
         nr.delete
         nr.codes
+        nr.HTTPError
 
 
 class GetTestCase(unittest.TestCase):
@@ -348,7 +349,40 @@ class ResponseTestCase(unittest.TestCase):
             },
         )
 
+    def test_raise_for_status_raises_error_for_404(self):
+        url = _url('/status/404')
+        response = nr.get(url)
+
+        with self.assertRaisesRegexp(nr.HTTPError, r'Error 404 for %s' % url):
+            response.raise_for_status()
+
+    def test_raise_for_status_raises_error_for_500(self):
+        url = _url('/status/500')
+        response = nr.get(url)
+
+        with self.assertRaisesRegexp(nr.HTTPError, r'Error 500 for %s' % url):
+            response.raise_for_status()
+
+    def test_raise_for_status_no_error(self):
+        url = _url('/status/200')
+        response = nr.get(url)
+
+        self.assertIsNone(response.raise_for_status())
+
+    def test_response_ok_true(self):
+        url = _url('/status/200')
+        response = nr.get(url)
+
+        self.assertTrue(response.ok)
+
+    def test_response_ok_false(self):
+        url = _url('/status/404')
+        response = nr.get(url)
+
+        self.assertFalse(response.ok)
+
+
 
 class CodesTestCase(unittest.TestCase):
-    def test_access_status_codes_as_properies(self):
+    def test_access_status_codes_as_properties(self):
         self.assertEqual(nr.codes.ok, 200)

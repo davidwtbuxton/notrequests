@@ -78,6 +78,10 @@ class PropertyDict(dict):
 codes = PropertyDict((_codes[k], k) for k in _codes)
 
 
+class HTTPError(Exception):
+    """Something went wrong when making the request."""
+
+
 class Request(urllib2.Request):
     def __init__(self, method, url, **kwargs):
         self._method = method
@@ -149,6 +153,21 @@ class Response(object):
                 result[rkey] = link
 
         return result
+
+    @property
+    def ok(self):
+        try:
+            self.raise_for_status()
+        except:
+            return False
+        else:
+            return True
+
+    def raise_for_status(self):
+        """Raises HTTPError if the request got an error."""
+        if 400 <= self.status_code < 600:
+            message = 'Error %s for %s' % (self.status_code, self.url)
+            raise HTTPError(message)
 
 
 class HTTPErrorHandler(urllib2.HTTPDefaultErrorHandler):
