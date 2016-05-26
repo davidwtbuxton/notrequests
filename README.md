@@ -39,7 +39,7 @@ Notrequests is compatible with the Requests API (or it tries to be).
 
 But it doesn't do everything that Requests does. There's no session support, no keep-alive support and it reads the entire response into memory.
 
-The response body is available as a byte string or as unicode, which relies on the server having sent a valid content-type header.
+The response body is available as a byte string or as unicode.
 
     >>> response = notrequests.get('http://httpbin.org/encoding/utf8')
     >>> response.headers['content-type']
@@ -48,6 +48,8 @@ The response body is available as a byte string or as unicode, which relies on t
     <type 'str'>
     >>> type(response.text)
     <type 'unicode'>
+
+Decoding to unicode relies on the server having sent a valid content-type header. This is different to Requests because Requests has smarts to sniff the encoding should the response not include a content-type header.
 
 Notrequests uses urllib2 but behaves more like Requests. So it won't throw an exception on 4xx and 5xx responses.
 
