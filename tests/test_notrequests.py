@@ -3,6 +3,7 @@ import json
 import os
 import socket
 import ssl
+import tempfile
 import unittest
 import urlparse
 import warnings
@@ -236,6 +237,18 @@ class PostTestCase(unittest.TestCase):
         data = response.json()
 
         self.assertEqual(data['files'], {'file': b'binarydata'})
+
+    def test_submit_file_with_file_from_disk(self):
+        url = _url('/post')
+        fh = tempfile.mkstemp()
+        files = {'file': fh}
+        response = nr.post(url, files=files)
+
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        self.assertEqual(data['files'], {'file': ''})
 
 
 class PutTestCase(unittest.TestCase):

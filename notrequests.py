@@ -4,6 +4,7 @@ import functools
 import json as simplejson
 import mimetools
 import mimetypes
+import os
 import re
 import ssl
 import urllib
