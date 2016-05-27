@@ -239,16 +239,27 @@ class PostTestCase(unittest.TestCase):
         self.assertEqual(data['files'], {'file': b'binarydata'})
 
     def test_submit_file_with_file_from_disk(self):
+        # This exercises the code which guesses the uploaded filename from
+        # the open file handle.
+
         url = _url('/post')
-        fh = tempfile.mkstemp()
-        files = {'file': fh}
-        response = nr.post(url, files=files)
+        _, path = tempfile.mkstemp()
 
-        self.assertEqual(response.status_code, 200)
+        with open(path, 'w') as fh:
+            fh.write(b'binarydata')
 
-        data = response.json()
+        try:
+            with open(path) as fh:
+                files = {'file': fh}
+                response = nr.post(url, files=files)
 
-        self.assertEqual(data['files'], {'file': ''})
+            self.assertEqual(response.status_code, 200)
+
+            data = response.json()
+
+            self.assertEqual(data['files'], {'file': 'binarydata'})
+        finally:
+            os.unlink(path)
 
 
 class PutTestCase(unittest.TestCase):

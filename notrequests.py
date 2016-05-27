@@ -79,7 +79,7 @@ class PropertyDict(dict):
 codes = PropertyDict((_codes[k], k) for k in _codes)
 
 
-class HTTPError(Exception):
+class HTTPError(IOError):
     """Something went wrong when making the request."""
 
 
