@@ -57,6 +57,20 @@ Notrequests uses urllib2 but behaves more like Requests. So it won't throw an ex
     >>> response.status_code == notrequests.codes.not_found
     True
 
+You can also test for failure, or raise an exception.
+
+    >>> response = notrequests.get('http://httpbin.org/status/200')
+    >>> response.ok
+    True
+    >>> response.raise_for_status()
+    >>> response = notrequests.get('http://httpbin.org/status/404')
+    >>> response.ok
+    False
+    >>> response.raise_for_status()
+    Traceback (most recent call last):
+      ...
+    notrequests.HTTPError: Error 404 for http://httpbin.org/status/404
+
 
 ### Redirects
 
@@ -161,7 +175,6 @@ These are some features of [the Requests API][api] that Notrequests has _not_ im
 
 - Sessions
 - Response.history
-- Response.raise_for_status()
 - Streaming uploads / downloads and iterating over data
 - Alternate names for status codes
 - Proxies

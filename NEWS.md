@@ -1,3 +1,5 @@
+- Implemented `response.ok` and `response.raise_for_status()` (#5).
+
 0.5 - 16 April 2016
 -------------------
 

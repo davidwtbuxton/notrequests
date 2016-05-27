@@ -3,6 +3,7 @@ import json
 import os
 import socket
 import ssl
+import tempfile
 import unittest
 import urlparse
 import warnings
@@ -23,6 +24,7 @@ class PackageAPITestCase(unittest.TestCase):
         nr.put
         nr.delete
         nr.codes
+        nr.HTTPError
 
 
 class GetTestCase(unittest.TestCase):
@@ -236,6 +238,29 @@ class PostTestCase(unittest.TestCase):
 
         self.assertEqual(data['files'], {'file': b'binarydata'})
 
+    def test_submit_file_with_file_from_disk(self):
+        # This exercises the code which guesses the uploaded filename from
+        # the open file handle.
+
+        url = _url('/post')
+        _, path = tempfile.mkstemp()
+
+        with open(path, 'w') as fh:
+            fh.write(b'binarydata')
+
+        try:
+            with open(path) as fh:
+                files = {'file': fh}
+                response = nr.post(url, files=files)
+
+            self.assertEqual(response.status_code, 200)
+
+            data = response.json()
+
+            self.assertEqual(data['files'], {'file': 'binarydata'})
+        finally:
+            os.unlink(path)
+
 
 class PutTestCase(unittest.TestCase):
     def test_put(self):
@@ -348,7 +373,40 @@ class ResponseTestCase(unittest.TestCase):
             },
         )
 
+    def test_raise_for_status_raises_error_for_404(self):
+        url = _url('/status/404')
+        response = nr.get(url)
+
+        with self.assertRaisesRegexp(nr.HTTPError, r'Error 404 for %s' % url):
+            response.raise_for_status()
+
+    def test_raise_for_status_raises_error_for_500(self):
+        url = _url('/status/500')
+        response = nr.get(url)
+
+        with self.assertRaisesRegexp(nr.HTTPError, r'Error 500 for %s' % url):
+            response.raise_for_status()
+
+    def test_raise_for_status_no_error(self):
+        url = _url('/status/200')
+        response = nr.get(url)
+
+        self.assertIsNone(response.raise_for_status())
+
+    def test_response_ok_true(self):
+        url = _url('/status/200')
+        response = nr.get(url)
+
+        self.assertTrue(response.ok)
+
+    def test_response_ok_false(self):
+        url = _url('/status/404')
+        response = nr.get(url)
+
+        self.assertFalse(response.ok)
+
+
 
 class CodesTestCase(unittest.TestCase):
-    def test_access_status_codes_as_properies(self):
+    def test_access_status_codes_as_properties(self):
         self.assertEqual(nr.codes.ok, 200)
