@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import io
 import json
 import os
@@ -20,9 +21,11 @@ def _url(path):
 class PackageAPITestCase(unittest.TestCase):
     def test_api(self):
         nr.get
+        nr.patch
         nr.post
         nr.put
         nr.delete
+        nr.head
         nr.codes
         nr.HTTPError
 
@@ -261,6 +264,19 @@ class PostTestCase(unittest.TestCase):
         finally:
             os.unlink(path)
 
+    def test_submit_file_and_form_data(self):
+        url = _url('/post')
+        files = {'file': io.BytesIO(b'binarydata')}
+        request_data = {'foo': 'bar baz'}
+        response = nr.post(url, files=files, data=request_data)
+
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        self.assertEqual(data['files'], {'file': 'binarydata'})
+        self.assertEqual(data['form'], {'foo': 'bar baz'})
+
 
 class PutTestCase(unittest.TestCase):
     def test_put(self):
@@ -406,7 +422,10 @@ class ResponseTestCase(unittest.TestCase):
         self.assertFalse(response.ok)
 
 
-
 class CodesTestCase(unittest.TestCase):
     def test_access_status_codes_as_properties(self):
         self.assertEqual(nr.codes.ok, 200)
+
+
+if __name__ == '__main__':
+    unittest.main()
