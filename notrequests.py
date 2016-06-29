@@ -12,7 +12,7 @@ import urllib2
 import urlparse
 
 
-__version__ = '0.5'
+__version__ = '0.6'
 _user_agent = 'notrequests/' + __version__
 LATIN1 = 'latin-1'
 JSON_TYPE = 'application/json'
