@@ -1,11 +1,9 @@
 Notrequests
 ===========
 
-A Python wrapper for the built-in urllib2 module. The API is compatible with [the excellent Requests library][requests], but omitting features such as sessions and support for keep-alive.
+A Python wrapper for the built-in urllib module. The API is compatible with [the excellent Requests library][requests], but omitting features such as sessions and support for keep-alive, all in a single module.
 
-Notrequests is intended for doing HTTP requests on [Google App Engine][gae] where Requests has some disadvantages.
-
-It is not Python 3 compatible (yet).
+Notrequests is intended for doing HTTP requests on [Google App Engine][gae] where Requests has some disadvantages. It works on Python 2.7 and Python 3.4 and later.
 
 
 Installation
@@ -204,6 +202,6 @@ If you want to use [the app identity service to authenticate connections between
 [requests]: http://www.python-requests.org/
 [gae]: https://cloud.google.com/appengine/
 [tox]: http://codespeak.net/tox/
-[appidentity]: https://cloud.google.com/appengine/docs/python/appidentity/#Python_Asserting_identity_to_other_App_Engine_apps
+[appidentity]: https://cloud.google.com/appengine/docs/python/appidentity/#asserting_identity_to_other_app_engine_apps
 [sockets]: https://cloud.google.com/appengine/docs/python/sockets/
 [api]: http://requests.readthedocs.org/en/latest/api/

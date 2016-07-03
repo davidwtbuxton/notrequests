@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup
 
 import notrequests
 
@@ -24,4 +24,5 @@ setup(
         'Programming Language :: Python :: 2.7',
     ],
     py_modules=['notrequests'],
+    install_requires=['six'],
 )
