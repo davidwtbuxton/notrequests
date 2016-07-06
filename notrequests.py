@@ -12,7 +12,7 @@ from six.moves import http_cookiejar
 from six.moves import urllib
 
 
-__version__ = '0.6'
+__version__ = '0.7'
 _user_agent = 'notrequests/' + __version__
 LATIN1 = 'latin-1'
 JSON_TYPE = 'application/json'

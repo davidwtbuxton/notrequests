@@ -1,3 +1,6 @@
+0.7 - 6 July 2016
+-----------------
+
 - Added support for Python 3.4 and 3.5, requiring the six compatibility library.
 
 0.6 - 29 June 2016
