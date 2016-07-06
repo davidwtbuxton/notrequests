@@ -6,7 +6,6 @@ import os
 import random
 import re
 import ssl
-import sys
 
 import six
 from six.moves import http_cookiejar
@@ -414,9 +413,9 @@ def request(method, url, params=None, data=None, headers=None, cookies=None,
     return _build_response(urllib_response, request)
 
 
+delete = functools.partial(request, 'DELETE')
 get = functools.partial(request, 'GET')
+head = functools.partial(request, 'HEAD')
 patch = functools.partial(request, 'PATCH')
 post = functools.partial(request, 'POST')
 put = functools.partial(request, 'PUT')
-delete = functools.partial(request, 'DELETE')
-head = functools.partial(request, 'HEAD')

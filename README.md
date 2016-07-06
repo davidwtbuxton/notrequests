@@ -1,9 +1,11 @@
 Notrequests
 ===========
 
-A Python wrapper for the built-in urllib module. The API is compatible with [the excellent Requests library][requests], but omitting features such as sessions and support for keep-alive, all in a single module.
+A Python wrapper for the built-in urllib module. The API is compatible with [the excellent Requests library][requests], but omitting features such as sessions and support for keep-alive, all in a single module (but requires the [six compatibility library][six]).
 
 Notrequests is intended for doing HTTP requests on [Google App Engine][gae] where Requests has some disadvantages. It works on Python 2.7 and Python 3.4 and later.
+
+The project is [hosted on GitHub][notrequests].
 
 
 Installation
@@ -177,6 +179,8 @@ These are some features of [the Requests API][api] that Notrequests has _not_ im
 - Alternate names for status codes
 - Proxies
 
+If there is a missing feature that you want to use on App Engine, please [open an issue on GitHub][issues].
+
 
 Tests
 -----
@@ -186,7 +190,7 @@ Run the tests with [tox][tox].
 By default the tests make requests to http://httpbin.org, but you can run a local instance which will speed things up.
 
     $ pip install httpbin gunicorn
-    $ gunicorn --bind 127.0.0.1:8888 httpbin:app
+    $ gunicorn --bind 127.0.0.1:8888 httpbin:app &
     $ export NOTREQUESTS_TEST_URL="http://127.0.0.1:8888"
     $ tox
 
@@ -194,14 +198,18 @@ By default the tests make requests to http://httpbin.org, but you can run a loca
 Why not use Requests?
 ---------------------
 
-Google App Engine patches httplib in the standard library to use its urlfetch service, and restricts [the sockets API][sockets] to paid applications. Requests does not use httplib and uses sockets.
+Google App Engine patches httplib in the standard library to use its urlfetch service, and restricts [the sockets API][sockets] to applications with billing enabled. Requests does not use httplib and uses sockets.
 
-If you want to use [the app identity service to authenticate connections between App Engine applications][appidentity] you have to use the urlfetch service, you cannot use Requests. Notrequests works because it uses urllib2, which uses httplib.
+If you want to use [the app identity service to authenticate connections between App Engine applications][appidentity] you have to use [the urlfetch service][urlfetch], you cannot use Requests. Notrequests works on App Engine, using the urlfetch service, because it uses the standard library.
 
 
+[notrequests]: https://github.com/davidwtbuxton/notrequests
 [requests]: http://www.python-requests.org/
 [gae]: https://cloud.google.com/appengine/
 [tox]: http://codespeak.net/tox/
 [appidentity]: https://cloud.google.com/appengine/docs/python/appidentity/#asserting_identity_to_other_app_engine_apps
 [sockets]: https://cloud.google.com/appengine/docs/python/sockets/
 [api]: http://requests.readthedocs.org/en/latest/api/
+[six]: https://pythonhosted.org/six/
+[urlfetch]: https://cloud.google.com/appengine/docs/python/outbound-requests
+[issues]: https://github.com/davidwtbuxton/notrequests/issues
