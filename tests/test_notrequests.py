@@ -6,8 +6,10 @@ import socket
 import ssl
 import tempfile
 import unittest
-import urlparse
 import warnings
+
+import six
+from six.moves import urllib
 
 import notrequests as nr
 
@@ -15,7 +17,7 @@ import notrequests as nr
 def _url(path):
     # See README on how to use a local httpbin instance for testing.
     base_url = os.environ.get('NOTREQUESTS_TEST_URL', 'http://httpbin.org/')
-    return urlparse.urljoin(base_url, path)
+    return urllib.parse.urljoin(base_url, path)
 
 
 class PackageAPITestCase(unittest.TestCase):
@@ -56,7 +58,7 @@ class GetTestCase(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        data = json.loads(response.content)
+        data = response.json()
 
         self.assertIn('headers', data)
         self.assertIn('X-Foo', data['headers'])
@@ -68,7 +70,7 @@ class GetTestCase(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        data = json.loads(response.content)
+        data = response.json()
 
         self.assertIn('headers', data)
         self.assertIn('X-Foo-Bar-Baz', data['headers'])
@@ -86,7 +88,7 @@ class GetTestCase(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        data = json.loads(response.content)
+        data = response.json()
 
         self.assertEqual(data, {'cookies': {'foo': 'bar'}})
 
@@ -179,20 +181,20 @@ class PostTestCase(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        data = json.loads(response.content)
+        data = response.json()
 
         self.assertEqual(data['headers']['Content-Type'], 'application/x-www-form-urlencoded')
         self.assertEqual(data['form'], request_data)
 
     def test_sending_data_as_bytes(self):
         url = _url('/post')
-        request_data = json.dumps({'foo': 'bar'})
+        request_data = json.dumps({'foo': 'bar'}).encode('utf-8')
         headers={'Content-Type': 'application/json'}
         response = nr.post(url, data=request_data, headers=headers)
 
         self.assertEqual(response.status_code, 200)
 
-        data = json.loads(response.content)
+        data = response.json()
 
         self.assertEqual(data['headers']['Content-Type'], 'application/json')
         self.assertEqual(data['data'], '{"foo": "bar"}')
@@ -204,7 +206,7 @@ class PostTestCase(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        data = json.loads(response.content)
+        data = response.json()
 
         self.assertEqual(data['data'], '{"foo": "bar"}')
         self.assertEqual(data['headers']['Content-Type'], 'application/json')
@@ -218,7 +220,7 @@ class PostTestCase(unittest.TestCase):
 
         data = response.json()
 
-        self.assertEqual(data['files'], {'file': b'binarydata'})
+        self.assertEqual(data['files'], {'file': 'binarydata'})
 
     def test_submit_file_with_name_and_file_object(self):
         url = _url('/post')
@@ -228,7 +230,7 @@ class PostTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
         data = response.json()
-        self.assertEqual(data['files'], {'file': b'binarydata'})
+        self.assertEqual(data['files'], {'file': 'binarydata'})
 
     def test_submit_file_with_name_and_byte_string(self):
         url = _url('/post')
@@ -239,7 +241,7 @@ class PostTestCase(unittest.TestCase):
 
         data = response.json()
 
-        self.assertEqual(data['files'], {'file': b'binarydata'})
+        self.assertEqual(data['files'], {'file': 'binarydata'})
 
     def test_submit_file_with_file_from_disk(self):
         # This exercises the code which guesses the uploaded filename from
@@ -248,11 +250,11 @@ class PostTestCase(unittest.TestCase):
         url = _url('/post')
         _, path = tempfile.mkstemp()
 
-        with open(path, 'w') as fh:
+        with open(path, 'wb') as fh:
             fh.write(b'binarydata')
 
         try:
-            with open(path) as fh:
+            with open(path, 'rb') as fh:
                 files = {'file': fh}
                 response = nr.post(url, files=files)
 
@@ -267,7 +269,7 @@ class PostTestCase(unittest.TestCase):
     def test_submit_file_and_form_data(self):
         url = _url('/post')
         files = {'file': io.BytesIO(b'binarydata')}
-        request_data = {'foo': 'bar baz'}
+        request_data = {'foo': b'bar baz'}
         response = nr.post(url, files=files, data=request_data)
 
         self.assertEqual(response.status_code, 200)
@@ -300,7 +302,7 @@ class HeadTestCase(unittest.TestCase):
         response = nr.head(url)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, '')
+        self.assertEqual(response.content, b'')
 
 
 class ResponseTestCase(unittest.TestCase):
@@ -320,9 +322,10 @@ class ResponseTestCase(unittest.TestCase):
     def test_content(self):
         url = _url('/user-agent')
         response = nr.get(url)
+        expected = ('{\n  "user-agent": "%s"\n}\n' % nr._user_agent).encode('latin-1')
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, '{\n  "user-agent": "%s"\n}\n' % nr._user_agent)
+        self.assertEqual(response.content, expected)
 
     def test_decoding_text_with_encoding_header(self):
         url = _url('/encoding/utf8')
@@ -330,7 +333,7 @@ class ResponseTestCase(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.headers['Content-Type'], 'text/html; charset=utf-8')
-        self.assertIsInstance(response.text, unicode)
+        self.assertIsInstance(response.text, six.text_type)
         self.assertEqual(response.text[:21], u'<h1>Unicode Demo</h1>')
 
     def test_links_property_with_valid_link_header(self):
@@ -362,7 +365,7 @@ class ResponseTestCase(unittest.TestCase):
 
         url = _url('/response-headers')
         # Domain can changed depending on NOTREQUESTS_TEST_URL being set.
-        domain = urlparse.urlparse(url).netloc.split(':')[0]
+        domain = urllib.parse.urlparse(url).netloc.split(':')[0]
 
         # httpbin's /cookies/set path doesn't allow us to specify domain, so
         # set the full cookie header value manually.
@@ -425,6 +428,38 @@ class ResponseTestCase(unittest.TestCase):
 class CodesTestCase(unittest.TestCase):
     def test_access_status_codes_as_properties(self):
         self.assertEqual(nr.codes.ok, 200)
+
+
+class DetectEncodingTestCase(unittest.TestCase):
+    def test_detect_utf8(self):
+        value = json.dumps({'foo': 'bar'}).encode('utf-8')
+        result = nr.detect_encoding(value)
+
+        self.assertEqual(result, 'utf-8')
+
+    def test_detect_utf16le(self):
+        value = json.dumps({'foo': 'bar'}).encode('utf-16-le')
+        result = nr.detect_encoding(value)
+
+        self.assertEqual(result, 'utf-16-le')
+
+    def test_detect_utf16be(self):
+        value = json.dumps({'foo': 'bar'}).encode('utf-16-be')
+        result = nr.detect_encoding(value)
+
+        self.assertEqual(result, 'utf-16-be')
+
+    def test_detect_utf32le(self):
+        value = json.dumps({'foo': 'bar'}).encode('utf-32-le')
+        result = nr.detect_encoding(value)
+
+        self.assertEqual(result, 'utf-32-le')
+
+    def test_detect_utf32be(self):
+        value = json.dumps({'foo': 'bar'}).encode('utf-32-be')
+        result = nr.detect_encoding(value)
+
+        self.assertEqual(result, 'utf-32-be')
 
 
 if __name__ == '__main__':
