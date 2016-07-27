@@ -79,8 +79,13 @@ class PropertyDict(dict):
 codes = PropertyDict((_codes[k], k) for k in _codes)
 
 
-class HTTPError(IOError):
+# For compatibility with code expecting requests' error classes.
+class RequestException(IOError):
     """Something went wrong when making the request."""
+
+
+class HTTPError(RequestException):
+    """An HTTP error occurred."""
 
 
 class Request(urllib.request.Request):
