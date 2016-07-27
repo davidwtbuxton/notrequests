@@ -424,3 +424,30 @@ head = functools.partial(request, 'HEAD')
 patch = functools.partial(request, 'PATCH')
 post = functools.partial(request, 'POST')
 put = functools.partial(request, 'PUT')
+
+
+def patch():
+    """Monkey-patch sys.modules so that other modules get notrequests when they
+    do `import requests`.
+
+    This will raise an exception if requests has already been imported, and only
+    patches a few modules, not all of requests actual modules.
+
+    Use this early in your app before any module tries to import requests.
+
+    >>> import notrequests
+    >>> notrequests.patch()
+    """
+    import imp
+    import sys
+
+    if 'requests' in sys.modules:
+        raise Exception('Requests already imported, giving up.')
+
+    mod = imp.new_module('requests.exceptions')
+
+    mod.RequestException = RequestException
+    mod.HTTPError = HTTPError
+
+    sys.modules['requests'] = sys.modules[__name__]
+    sys.modules['requests.exceptions'] = mod
