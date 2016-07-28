@@ -171,6 +171,16 @@ Notrequests does not support specifying alternate CA bundles.
 API compatibility
 -----------------
 
+If you want to use a third-party package which relies on a recent version of Requests, you can ask Notrequests to monkey-patch the module import system. You must call `notrequests.monkey()` before any other package has imported Requests:
+
+    >>> import notrequests
+    >>> notrequests.monkey()
+    >>> import requests
+    >>> requests.__name__
+    'notrequests'
+
+N.B. Monkey-patching is an experimental feature. It may work, depending on what parts of Requests' API the third-party package uses.
+
 These are some features of [the Requests API][api] that Notrequests has _not_ implemented. It isn't a complete list, and it would be nice to have better support.
 
 - Sessions

@@ -426,7 +426,7 @@ post = functools.partial(request, 'POST')
 put = functools.partial(request, 'PUT')
 
 
-def patch():
+def monkey():
     """Monkey-patch sys.modules so that other modules get notrequests when they
     do `import requests`.
 

@@ -30,6 +30,7 @@ class PackageAPITestCase(unittest.TestCase):
         nr.head
         nr.codes
         nr.HTTPError
+        nr.RequestException
 
 
 class GetTestCase(unittest.TestCase):
