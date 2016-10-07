@@ -22,6 +22,12 @@ Or download and run setup as normal:
     $ cd notrequests-master
     $ python setup.py install
 
+If you are using Notrequests on App Engine you will need to enable the ssl built-in library. Add the following to the libraries configuration for your project's app.yaml:
+
+    libraries:
+      - name: ssl
+        version: "2.7.11"
+
 
 Usage
 -----

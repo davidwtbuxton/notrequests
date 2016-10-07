@@ -7,9 +7,15 @@ import random
 import re
 import ssl
 
-import six
-from six.moves import http_cookiejar
-from six.moves import urllib
+try:
+    import six
+    from six.moves import http_cookiejar
+    from six.moves import urllib
+except ImportError:
+    # The setup.py script imports the module to get the version, which is OK
+    # for now, just to get installation working. Probably should try removing
+    # six altogether and doing the Python 2/3 compatible imports ourselves.
+    pass
 
 
 __version__ = '0.7'
